@@ -19,7 +19,3 @@ Plaintext
     ├─ ⚙️ 1 15054 0% arrêtée sleep 100000
     ╰─→ $ _
 ```
-
-### TRUE Native Time Module (Zero Process Forks; 12-Hour AM/PM Format)
-    set -l native_time (command date "+%I:%M:%S %p")
-    _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' "$native_time"
