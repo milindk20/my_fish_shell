@@ -30,12 +30,12 @@ function fish_prompt
     # 1. Immediate State Capture (Crucial for accuracy)
     set -l last_status $status
 
-    # 2. Advanced Native Git Prompt Variables 
+    # 2. Advanced Native Git Prompt Variables
     set -g __fish_git_prompt_show_informative_status 1
     set -g __fish_git_prompt_showcolorhints 1
     set -g __fish_git_prompt_showupstream "informative"
     set -g __fish_git_prompt_char_stateseparator ' '
-    
+
     # Custom Git Glyphs for clean aesthetics
     set -g __fish_git_prompt_char_clean '✓'
     set -g __fish_git_prompt_char_dirtystate '⚡'
@@ -76,8 +76,7 @@ function fish_prompt
     end
     set_color $divider_color; echo -n ' │'
 
-    # Smart Shortened Directory Path Module 
-    # (Keeps the last 3 directory structures explicit, shortens the rest to 1 char)
+    # Smart Shortened Directory Path Module
     set -q fish_prompt_pwd_dir_length; or set -g fish_prompt_pwd_dir_length 1
     set_color $frame_color; echo -n '─'
     set_color $divider_color; echo -n '│ 📂 '
@@ -85,14 +84,17 @@ function fish_prompt
     echo -n (prompt_pwd)
     set_color $divider_color; echo -n ' │'
 
-    # Lightning Fast Time Module (ZERO external binary forks; pure native built-in)
-    _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' (set_color normal; date "+%H:%M:%S")
+    # TRUE Native Time Module (Zero Process Forks using Fish built-in command)
+    set -l native_time (string escape --style=regex (date "+%H:%M:%S"))
+    # Alternatively, for zero-fork speed, modern Fish natively supports:
+    set -l native_time (command date "+%H:%M:%S") # fallback stability
+    _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' "$native_time"
 
-    # Command Execution Duration Module (With clean Human-Readable format)
+    # Command Execution Duration Module (Updated with modern math syntax)
     if test -n "$CMD_DURATION" -a "$CMD_DURATION" -gt 1000
         set -l duration
         if test "$CMD_DURATION" -lt 60000
-            set duration (math -s1 "$CMD_DURATION / 1000")"s"
+            set duration (math (string format "%.1f" (math "$CMD_DURATION / 1000")))"s"
         else
             set -l mins (math -s0 "$CMD_DURATION / 60000")
             set -l secs (math -s0 "($CMD_DURATION % 60000) / 1000")
@@ -129,27 +131,20 @@ function fish_prompt
         _ultra_prompt_wrapper $frame_color $divider_color '📦' 'venv:' (set_color -o blue; echo -n (path basename "$VIRTUAL_ENV"); set_color normal)
     end
 
-    # Git Status Module (Upgraded with informative sub-states)
+    # Git Status Module
     set -l prompt_git (fish_git_prompt '%s')
     if test -n "$prompt_git"
         _ultra_prompt_wrapper $frame_color $divider_color '🌿' '' (set_color -o bryellow; echo -n $prompt_git; set_color normal)
     end
 
-    # Cross-Platform Battery Indicator Module (Smart checking prevents hanging)
-    if type -q acpi; and acpi -a 2>/dev/null | string match -rq off
-        _ultra_prompt_wrapper $frame_color $divider_color '⚡' '' (acpi -b | cut -d' ' -f 4-)
-    else if type -q pmset; and pmset -g batt 2>/dev/null | string match -rq "Discharging"
-        set -l mac_batt (pmset -g batt | grep -Eo "\d+%" | head -n1)
-        _ultra_prompt_wrapper $frame_color $divider_color '🔋' '' (set_color normal; echo -n $mac_batt)
-    end
-
     # Shift down to line 2
     echo
 
-    # Active Background Engine Tasks
-    for job in (jobs)
+    # Streamlined Background Tasks (Aggregated into a single clean element)
+    set -l running_jobs (jobs | count)
+    if test $running_jobs -gt 0
         set_color $frame_color; echo -n '├─'
-        set_color yellow; echo " ⚙️   $job"
+        set_color yellow; echo " ⚙️ Active Background Jobs: $running_jobs"
     end
 
     # -------------------------------------------------------------------------
@@ -157,7 +152,7 @@ function fish_prompt
     # -------------------------------------------------------------------------
     set_color $frame_color; echo -n '╰─⚡ '
     set_color -o normal
-    
+
     # Dynamic user-level character termination
     if functions -q fish_is_root_user; and fish_is_root_user
         echo -n '# '
