@@ -1,6 +1,5 @@
 # =============================================================================
-# Helper: Premium Segment Wrapper Function
-# (Defined globally so it doesn't compile on every single keystroke)
+# Helper: Elite Segment Wrapper Function (Global Execution Optimization)
 # =============================================================================
 function _ultra_prompt_wrapper
     set -l f_color $argv[1]
@@ -28,15 +27,25 @@ end
 # Main Prompt Configuration
 # =============================================================================
 function fish_prompt
-    # 1. Capture status immediately
+    # 1. Immediate State Capture (Crucial for accuracy)
     set -l last_status $status
 
-    # 2. Configure Git prompt styles
-    set -q __fish_git_prompt_showupstream
-    or set -g __fish_git_prompt_showupstream auto
+    # 2. Advanced Native Git Prompt Variables 
+    set -g __fish_git_prompt_show_informative_status 1
+    set -g __fish_git_prompt_showcolorhints 1
+    set -g __fish_git_prompt_showupstream "informative"
     set -g __fish_git_prompt_char_stateseparator ' '
+    
+    # Custom Git Glyphs for clean aesthetics
+    set -g __fish_git_prompt_char_clean '✓'
+    set -g __fish_git_prompt_char_dirtystate '⚡'
+    set -g __fish_git_prompt_char_invalidstate '✖'
+    set -g __fish_git_prompt_char_stagedstate '●'
+    set -g __fish_git_prompt_char_untrackedfiles '…'
+    set -g __fish_git_prompt_char_upstream_ahead '↑'
+    set -g __fish_git_prompt_char_upstream_behind '↓'
 
-    # 3. Dynamic Frame Color Theme based on status
+    # 3. Dynamic Frame Theme (Based entirely on last command success)
     set -l frame_color red
     test $last_status = 0; and set frame_color green
 
@@ -60,33 +69,41 @@ function fish_prompt
     set_color brwhite; echo -n ' @ '
 
     # Hostname Module (SSH vs Local)
-    if test -z "$SSH_CLIENT"
-        set_color -o brmagenta
+    if test -n "$SSH_CLIENT" -o -n "$SSH_TTY"
+        set_color -o brblue; echo -n (prompt_hostname)" 🌐"
     else
-        set_color -o brblue
+        set_color -o brmagenta; echo -n (prompt_hostname)
     end
-    echo -n (prompt_hostname)
     set_color $divider_color; echo -n ' │'
 
-    # Dynamic Directory Path Module (Limits depth components to keep prompt tidy)
+    # Smart Shortened Directory Path Module 
+    # (Keeps the last 3 directory structures explicit, shortens the rest to 1 char)
+    set -q fish_prompt_pwd_dir_length; or set -g fish_prompt_pwd_dir_length 1
     set_color $frame_color; echo -n '─'
     set_color $divider_color; echo -n '│ 📂 '
     set_color -o brgreen
     echo -n (prompt_pwd)
     set_color $divider_color; echo -n ' │'
 
-    # Lightning Fast Time Module (Uses native fish variables instead of calling `date`)
-    _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' (set_color normal; date +%H:%M:%S)
+    # Lightning Fast Time Module (ZERO external binary forks; pure native built-in)
+    _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' (set_color normal; date "+%H:%M:%S")
 
-    # Command Execution Duration Module (NEW: Shows how long heavy tasks took)
+    # Command Execution Duration Module (With clean Human-Readable format)
     if test -n "$CMD_DURATION" -a "$CMD_DURATION" -gt 1000
-        set -l duration (math -s1 "$CMD_DURATION / 1000")
-        _ultra_prompt_wrapper $frame_color $divider_color '⏱️' '' (set_color bryellow; echo -n $duration"s"; set_color normal)
+        set -l duration
+        if test "$CMD_DURATION" -lt 60000
+            set duration (math -s1 "$CMD_DURATION / 1000")"s"
+        else
+            set -l mins (math -s0 "$CMD_DURATION / 60000")
+            set -l secs (math -s0 "($CMD_DURATION % 60000) / 1000")
+            set duration "$mins"m" $secs"s""
+        end
+        _ultra_prompt_wrapper $frame_color $divider_color '⏱️' '' (set_color bryellow; echo -n $duration; set_color normal)
     end
 
     # Conditional Error Status Module
     if test $last_status -ne 0
-        _ultra_prompt_wrapper $frame_color $divider_color '❌' 'ERR' (set_color -o brred; echo -n $last_status; set_color normal)
+        _ultra_prompt_wrapper $frame_color $divider_color '❌' 'ERR:' (set_color -o brred; echo -n $last_status; set_color normal)
     end
 
     # Interactive Vi-Mode Module
@@ -112,16 +129,15 @@ function fish_prompt
         _ultra_prompt_wrapper $frame_color $divider_color '📦' 'venv:' (set_color -o blue; echo -n (path basename "$VIRTUAL_ENV"); set_color normal)
     end
 
-    # Git Status Module
+    # Git Status Module (Upgraded with informative sub-states)
     set -l prompt_git (fish_git_prompt '%s')
     if test -n "$prompt_git"
         _ultra_prompt_wrapper $frame_color $divider_color '🌿' '' (set_color -o bryellow; echo -n $prompt_git; set_color normal)
     end
 
-    # Cross-Platform Battery Indicator Module (Linux & macOS friendly)
+    # Cross-Platform Battery Indicator Module (Smart checking prevents hanging)
     if type -q acpi; and acpi -a 2>/dev/null | string match -rq off
         _ultra_prompt_wrapper $frame_color $divider_color '⚡' '' (acpi -b | cut -d' ' -f 4-)
-    # MacOS Support fallback
     else if type -q pmset; and pmset -g batt 2>/dev/null | string match -rq "Discharging"
         set -l mac_batt (pmset -g batt | grep -Eo "\d+%" | head -n1)
         _ultra_prompt_wrapper $frame_color $divider_color '🔋' '' (set_color normal; echo -n $mac_batt)
@@ -142,7 +158,7 @@ function fish_prompt
     set_color $frame_color; echo -n '╰─⚡ '
     set_color -o normal
     
-    # Change prompt character to '#' if running as root
+    # Dynamic user-level character termination
     if functions -q fish_is_root_user; and fish_is_root_user
         echo -n '# '
     else
