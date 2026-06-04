@@ -38,3 +38,10 @@ Plaintext
 ╭─│ milind @ latitude3150 │─│ 📂 ~/.config/fish │─│ 🕒 12:46:24 │─│ ❌ ERR 127 │
 ╰─⚡ $ _
 ```
+
+## design_3
+
+Visual Preview of the Upgraded Interface
+```text
+
+```
