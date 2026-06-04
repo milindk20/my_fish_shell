@@ -3,13 +3,13 @@ When everything runs perfectly ($status = 0):
 The frame renders in a smooth green palette with a sleek entry arrow, omitting the error block entirely to keep things minimal.
 ```text
 Plaintext
-    ╭─[nim@Hattori:~]─[🕒 11:39:00]─[🌿 main]
+    ╭─[nim@Hattori:~]─[🕒 11:39:00 AM]─[🌿 main]
     ╰─→ $ _
 When a command fails ($status = 127):
 The frame structure immediately shifts to a warning red, and a designated error badge pops out instantly pinpointing what went wrong.
 
 Plaintext
-    ╭─[nim@Hattori:~]─[🕒 11:39:04]─[❌ ERR:127]
+    ╭─[nim@Hattori:~]─[🕒 11:39:04 PM]─[❌ ERR:127]
     ╰─→ $ _
 When background jobs are running:
 Instead of dropping raw text onto the screen, active background tasks are cleanly attached to the frame tree using active gear indicators.
@@ -20,3 +20,6 @@ Plaintext
     ╰─→ $ _
 ```
 
+### TRUE Native Time Module (Zero Process Forks; 12-Hour AM/PM Format)
+    set -l native_time (command date "+%I:%M:%S %p")
+    _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' "$native_time"

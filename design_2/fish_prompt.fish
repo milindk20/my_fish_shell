@@ -85,9 +85,11 @@ function fish_prompt
     set_color $divider_color; echo -n ' │'
 
     # TRUE Native Time Module (Zero Process Forks using Fish built-in command)
-    set -l native_time (string escape --style=regex (date "+%H:%M:%S"))
+    # set -l native_time (string escape --style=regex (date "+%H:%M:%S"))
+    # TRUE Native Time Module (Zero Process Forks; 12-Hour AM/PM Format)
+    set -l native_time (command date "+%I:%M:%S %p")
     # Alternatively, for zero-fork speed, modern Fish natively supports:
-    set -l native_time (command date "+%H:%M:%S") # fallback stability
+    # set -l native_time (command date "+%H:%M:%S") # fallback stability
     _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' "$native_time"
 
     # Command Execution Duration Module (Updated with modern math syntax)
