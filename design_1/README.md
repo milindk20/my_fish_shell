@@ -1,6 +1,3 @@
-# my_fish_shell
-
-## `design_1`
 Visual Preview of the Upgraded Interface
 On Successful Commands:
 Notice how clean the spacing looks with the container columns (│), along with the highlighted directory block.
