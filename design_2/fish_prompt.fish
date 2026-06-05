@@ -92,15 +92,18 @@ function fish_prompt
     # set -l native_time (command date "+%H:%M:%S") # fallback stability
     _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' "$native_time"
 
-    # Command Execution Duration Module (Updated with modern math syntax)
+# Command Execution Duration Module (Bulletproof Classic Math & Printf)
     if test -n "$CMD_DURATION" -a "$CMD_DURATION" -gt 1000
         set -l duration
         if test "$CMD_DURATION" -lt 60000
-            set duration (math (string format "%.1f" (math "$CMD_DURATION / 1000")))"s"
+            # Calculate total seconds as a float
+            set -l raw_secs (math "$CMD_DURATION / 1000")
+            # Format to 1 decimal place using printf safely
+            set duration (printf "%.1f" $raw_secs)"s"
         else
             set -l mins (math -s0 "$CMD_DURATION / 60000")
             set -l secs (math -s0 "($CMD_DURATION % 60000) / 1000")
-            set duration "$mins"m" $secs"s""
+            set duration "$mins""m ""$secs""s"
         end
         _ultra_prompt_wrapper $frame_color $divider_color '⏱️' '' (set_color bryellow; echo -n $duration; set_color normal)
     end

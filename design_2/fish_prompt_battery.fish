@@ -88,15 +88,18 @@ function fish_prompt
     # Lightning Fast Time Module (ZERO external binary forks; pure native built-in)
     _ultra_prompt_wrapper $frame_color $divider_color '🕒' '' (set_color normal; date "+%H:%M:%S")
 
-    # Command Execution Duration Module (With clean Human-Readable format)
+# Command Execution Duration Module (Bulletproof Classic Math & Printf)
     if test -n "$CMD_DURATION" -a "$CMD_DURATION" -gt 1000
         set -l duration
         if test "$CMD_DURATION" -lt 60000
-            set duration (math -s1 "$CMD_DURATION / 1000")"s"
+            # Calculate total seconds as a float
+            set -l raw_secs (math "$CMD_DURATION / 1000")
+            # Format to 1 decimal place using printf safely
+            set duration (printf "%.1f" $raw_secs)"s"
         else
             set -l mins (math -s0 "$CMD_DURATION / 60000")
             set -l secs (math -s0 "($CMD_DURATION % 60000) / 1000")
-            set duration "$mins"m" $secs"s""
+            set duration "$mins""m ""$secs""s"
         end
         _ultra_prompt_wrapper $frame_color $divider_color '⏱️' '' (set_color bryellow; echo -n $duration; set_color normal)
     end
